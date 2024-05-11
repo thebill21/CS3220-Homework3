@@ -26,7 +26,7 @@
             <label for="birthYear" class="form-label">Birth Year:</label>
             <select id='birthYear' name="birthYear" class="form-select" required>
                 <#list birthYears as year>
-<#--                    <option value="${year?string["0"]}">${year?string["0"]}</option>-->
+                <#--                    <option value="${year?string["0"]}">${year?string["0"]}</option>-->
                     <option value="${year?string["0"]}" <#if player.birthYear == year>selected</#if>>${year?string["0"]}</option>
                 </#list>
             </select>

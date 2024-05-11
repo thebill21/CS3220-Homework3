@@ -24,6 +24,17 @@ public class TeamController {
     @Autowired
     private final PlayerRepository playerRepository;
 
+    private void updateTeamPlayerCount() {
+        List<Team> teams = teamRepository.findAll();
+        teams.forEach(team -> {
+            int playerCount = playerRepository.findAll().stream()
+                    .filter(player -> player.getTeam() != null && player.getTeam().getId().equals(team.getId()))
+                    .toList().size();
+            team.setNumberOfPlayers(playerCount);
+            teamRepository.save(team); // Save the updated player count to the database
+        });
+    }
+
     public TeamController(TeamRepository teamRepository, PlayerRepository playerRepository) {
         this.teamRepository = teamRepository;
         this.playerRepository = playerRepository;
@@ -38,6 +49,7 @@ public class TeamController {
 //            team.setNumberOfPlayers(playerCount);
 //            teamRepository.save(team); // Save the updated player count to the database
 //        });
+        updateTeamPlayerCount();
         model.addAttribute("teams", teamRepository.findAll());
         return "listTeams";
     }
@@ -45,6 +57,7 @@ public class TeamController {
     @RequestMapping("/teams/{id}/roster")
     public String viewRoster(@PathVariable("id") Integer id, Model model) {
         Team team = teamRepository.findById(id).orElse(null);
+        updateTeamPlayerCount();
         if (team != null) {
             List<Player> players = playerRepository.findAll().stream()
                     .filter(player -> player.getTeam() != null && player.getTeam().getId().equals(team.getId()))

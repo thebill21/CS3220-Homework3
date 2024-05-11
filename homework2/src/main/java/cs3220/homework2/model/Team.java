@@ -78,6 +78,9 @@ public class Team {
         this.numberOfPlayers = numberOfPlayers;
     }
 
+    public List<Player> getPlayers() {
+        return players;
+    }
     @Override
     public int hashCode() {
         return 31;

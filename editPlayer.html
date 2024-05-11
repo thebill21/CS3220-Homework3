@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hurricanes Soccer Academy</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/sketchy/bootstrap.min.css"
+      integrity="sha256-f7hJZyBzAwE4o9BfboUSmbbh6H763Cx/0gPiuvxYSJc="
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+  </head>
+  <body class="container">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+          <i class="bi bi-globe"></i>
+          Hurricanes Soccer Academy</a
+        >
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/players">Players</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/teams">Teams</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <h2 class="mt-3">Edit Player</h2>
+    <form id="editPlayerForm" method="post">
+      <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <input
+          type="text"
+          class="form-control"
+          id="name"
+          name="name"
+          required
+        />
+      </div>
+      <div class="mb-3">
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="radio"
+            id="gender"
+            name="gender"
+            value="Male"
+            checked
+          />
+          <label class="form-check-label" for="gender">M</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="radio"
+            id="gender"
+            name="gender"
+            value="Female"
+          />
+          <label class="form-check-label" for="gender">F</label>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label for="birthYear" class="form-label">Birth Year</label>
+        <select class="form-select" name="birthYear" id="birthYear"></select>
+		<!-- Options will be populated here through JavaScript -->
+      </div>
+	  
+      <div class="mb-3">
+        <label for="teamId" class="form-label">Team</label>
+        <select class="form-select" name="teamId" id="teamId">
+          <option value="">Select a team</option>
+          <!-- Options will be populated here through JavaScript -->
+        </select>
+      </div>
+	  
+	  
+      <a href="../players" class="btn btn-secondary me-2">Cancel</a>
+      <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+    <div class="bg-body-tertiary mt-3 p-3 text-center">
+      Hurricanes Soccer Academy - Serving Claremont and Surrounding Areas
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+      crossorigin="anonymous"></script>
+
+
+	<script>
+		document.addEventListener("DOMContentLoaded", function() {
+			fetchPlayerDetails();
+			fetchTeams();  // Assuming this function is already defined as you've provided
+			populateBirthYearDropdown();
+			selectBirthYear();
+		});
+
+		function fetchTeams() {
+			fetch('http://localhost:8080/api/teams')
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('Network response was not ok');
+				}
+				return response.json();
+			})
+			.then(data => {
+				console.log("Data received:", data);  // Check what data is received.
+				populateTeamDropdown(data);
+			})
+			.catch(error => console.error('Error fetching teams:', error));
+		}
+
+		function populateTeamDropdown(teams) {
+			console.log("Populating dropdown with teams:", teams);
+			const teamSelect = document.getElementById('teamId');
+			if (!teamSelect) {
+				console.error('Dropdown element not found');
+				return;
+			}
+			// Clear existing options
+			teamSelect.innerHTML = '<option value="">Select a team</option>';
+
+			// Iterate over each team and add an option to the dropdown
+			teams.forEach(team => {
+				const option = document.createElement('option');
+				option.value = team.id;
+				option.textContent = `${team.id} - ${team.color} - ${team.gender}`; // Simplified display
+				// Add data attributes for filtering
+				option.setAttribute('data-gender', team.gender);
+				option.setAttribute('data-min-age', team.minAge);
+				option.setAttribute('data-max-age', team.maxAge);
+				teamSelect.appendChild(option);
+			});
+		filterTeams();  // Ensure we filter teams again once loaded
+		}
+		
+		function filterTeams() {
+			const selectedGender = document.querySelector('input[name="gender"]:checked').value;
+			const selectedBirthYear = parseInt(document.getElementById("birthYear").value);
+			const age = new Date().getFullYear() - selectedBirthYear;
+			const teamSelect = document.getElementById("teamId");
+			teamSelect.value = "";  // Set selected team to empty
+
+			Array.from(teamSelect.options).forEach(option => {
+				if (option.value) {
+					const teamGender = option.dataset.gender;
+					const minAge = parseInt(option.dataset.minAge);
+					const maxAge = parseInt(option.dataset.maxAge);
+					if (teamGender === selectedGender && age >= minAge && age <= maxAge) {
+						option.style.display = "block";
+					} else {
+						option.style.display = "none";
+					}
+				}
+			});
+		}
+
+		function fetchPlayerDetails() {
+			const playerId = 1;  // Hardcoded for demonstration, this could be dynamically determined
+			fetch(`http://localhost:8080/api/players/${playerId}`)
+				.then(response => {
+					if (!response.ok) {
+						throw new Error('Failed to fetch player data');
+					}
+					return response.json();
+				})
+				.then(player => {
+					//PRE-FILL the information with data fetched from player API
+					document.getElementById('name').value = player.name; //pre-fill for Player's Name
+					document.getElementById('birthYear').value = player.birthYear; //pre-select Player's birth year
+					setGender(player.gender); // This will check the appropriate gender radio button
+					document.getElementById('teamId').value = player.teamId; // Pre-select the team in the dropdown
+					filterTeams();  // Adjust teams based on fetched player data
+				})
+				.catch(error => console.error('Error fetching player details:', error));
+		}
+		
+		function setGender(gender) {
+			// Assuming 'gender' is the value fetched and it can be "M" or "F"
+			const genderInput = document.querySelector(`input[name="gender"][value="${gender}"]`);
+			if (genderInput) {
+				genderInput.checked = true;
+			}
+		}
+		
+		function setTeam(teamId) {
+			const teamSelect = document.getElementById('teamId');
+			if (teamSelect) {
+				teamSelect.value = player.teamId;
+			}
+		}
+
+		function populateBirthYearDropdown() {
+			const currentYear = new Date().getFullYear();
+			const minYear = currentYear - 12;
+			const maxYear = currentYear - 4;
+			const birthYearSelect = document.getElementById("birthYear");
+			for (let year = minYear; year <= maxYear; year++) {
+				let option = new Option(year, year);
+				birthYearSelect.add(option);
+			}
+		}
+
+		function selectBirthYear() {
+			document.getElementById("birthYear").value = birthYear;
+		}
+
+		// Other functions like fetchTeams(), populateBirthYearDropdown(), etc., assumed to be correctly implemented as you have written
+		
+		// Example: Setting the form action dynamically		
+		document.getElementById('editPlayerForm').addEventListener('submit', function(event) {
+			event.preventDefault();
+
+			var teamId = document.getElementById('teamId').value;
+			var playerId = 1
+			var playerName = document.getElementById('name').value;
+			var gender = document.querySelector('input[name="gender"]:checked').value;
+			var birthYear = document.getElementById('birthYear').value;
+
+			var jsonData = JSON.stringify({
+				name: playerName,
+				gender: gender,
+				birthYear: parseInt(birthYear)
+			});
+
+			var actionURL = `http://localhost:8080/api/teams/${teamId}/players/${playerId}`;
+
+			fetch(actionURL, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: jsonData
+			})
+			.then(response => response.json())
+			.then(data => {
+				console.log('Success:', data);
+				alert('Player updated successfully!');
+			})
+			.catch(error => {
+				console.error('Error:', error);
+				alert('Failed to update player.');
+			});
+});
+
+
+	</script>
+  </body>
+</html>
