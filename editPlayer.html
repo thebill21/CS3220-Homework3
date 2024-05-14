@@ -92,7 +92,7 @@
       <div class="mb-3">
         <label for="teamId" class="form-label">Team</label>
         <select class="form-select" name="teamId" id="teamId">
-          <option value="">Select a team</option>
+          <option value= "-1">Select a team</option>
           <!-- Options will be populated here through JavaScript -->
         </select>
       </div>
@@ -234,7 +234,8 @@
 		document.getElementById('editPlayerForm').addEventListener('submit', function(event) {
 			event.preventDefault();
 
-			var teamId = document.getElementById('teamId').value;
+			var teamSelect = document.getElementById('teamId');
+			var teamId = teamSelect.value;
 			var playerId = 1
 			var playerName = document.getElementById('name').value;
 			var gender = document.querySelector('input[name="gender"]:checked').value;

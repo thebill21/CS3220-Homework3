@@ -83,25 +83,17 @@ public class TeamApiController {
                                              @PathVariable Integer playerId,
                                              @RequestBody CreatePlayerRequest createPlayerRequest) {
         try {
-            // Fetch the team
+            // Fetch the team by ID
             Team team = teamRepository.findById(teamId)
                     .orElseThrow(() -> new NoSuchElementException("Team not found"));
-
             // Fetch the player by ID
             Player player = playerRepository.findById(playerId)
                     .orElseThrow(() -> new NoSuchElementException("Player not found"));
-
-            // Check if the player is already assigned to a team
-//            if (player.getTeam() != null) {
-//                if (player.getTeam().getId().equals(teamId)) {
-//                    playerRepository.save(player);
-//                    return ResponseEntity.badRequest().body("Player is already on this team.");
-//                }
-//            }
-
-            // Assign the player to the team
-//            team.getPlayers().add(player);
-            player.setTeam(team);
+            if(teamId < 0){
+                player.setTeam(null);
+            } else {
+                player.setTeam(team);
+            }
             player.setName(createPlayerRequest.getName());
             player.setGender(createPlayerRequest.getGender());
             player.setBirthYear(createPlayerRequest.getBirthYear());
